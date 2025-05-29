@@ -6,11 +6,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.event.MouseAdapter;
 import java.awt.image.BufferedImage;
-import java.util.HashMap;
 import javax.swing.BorderFactory;
-import javax.swing.BoxLayout;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.io.FileWriter;
+import java.io.IOException;
+import javax.swing.JOptionPane;
 
 public class World extends JPanel{
     
@@ -57,12 +60,20 @@ public class World extends JPanel{
 
             int selected = L.selectedImage();
             worldmap[FileX][FileY] = selected;
-            System.err.println(selected);
+            //System.err.println(selected);
             t.loadImage(selected);
-            //repaint();
             draw();
             requestFocusInWindow();
           } 
+        });
+        addKeyListener(new KeyAdapter() {   
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int key = e.getKeyCode();
+                if (key == KeyEvent.VK_ENTER) {
+                    saveWorldMap();
+                }
+            }
         });
     }
     private JPanel createRightPanel() {
@@ -110,6 +121,27 @@ public class World extends JPanel{
         } else {
             System.err.println("Image is null!");
            // g2.fillRect(0, 0, 32, 32);
+        }
+    }
+    public void saveWorldMap() {
+        String fileName = JOptionPane.showInputDialog(this, "Enter file name(without extention):", "Save Map", JOptionPane.PLAIN_MESSAGE);
+        
+        if (fileName != null && !fileName.trim().isEmpty()) {
+            try (FileWriter writer = new FileWriter(fileName + ".txt")) {
+                for (int y = 0; y < SizeY; y++) {
+                    for (int x = 0; x < SizeX; x++) {
+                        writer.write(worldmap[x][y] + " ");
+                    }
+                    writer.write("\n");
+                }
+                writer.flush();
+                System.out.println("Map saved to " + fileName + ".txt");
+            } catch (IOException e) {
+                e.printStackTrace();
+                JOptionPane.showMessageDialog(this, "Failed to save file.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        } else {
+            System.out.println("Save cancelled.");
         }
     }
 }
